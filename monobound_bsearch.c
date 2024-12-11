@@ -32,14 +32,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+#else
 #include <sys/time.h>
+#endif
 #include <time.h>
 
 int checks;
 
 // Avoid inlining to guarantee the benchmark is fair.
 
-__attribute__ ((noinline)) int cmp_int(const void * a, const void * b)
+int cmp_int(const void * a, const void * b)
 {
         int fa = *(int *)a;
         int fb = *(int *)b;

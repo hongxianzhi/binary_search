@@ -1,4 +1,4 @@
-/*
+﻿/*
 	Copyright (C) 2014-2021 Igor van den Hoven ivdhoven@gmail.com
 */
 
@@ -32,14 +32,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+#else
 #include <sys/time.h>
+#endif
 #include <time.h>
 
 unsigned int checks;
 
 // linear search, needs to run backwards so it's stable
 
-int linear_search(int *array, unsigned int array_size, int key)
+int linear_search(int* array, unsigned int array_size, int key)
 {
 	unsigned int top = array_size;
 
@@ -57,7 +61,7 @@ int linear_search(int *array, unsigned int array_size, int key)
 
 // faster than linear on larger arrays
 
-int breaking_linear_search(int *array, unsigned int array_size, int key)
+int breaking_linear_search(int* array, unsigned int array_size, int key)
 {
 	unsigned int top = array_size;
 
@@ -86,7 +90,7 @@ int breaking_linear_search(int *array, unsigned int array_size, int key)
 
 // the standard binary search from text books
 
-int standard_binary_search(int *array, unsigned int array_size, int key)
+int standard_binary_search(int* array, unsigned int array_size, int key)
 {
 	int bot, mid, top;
 
@@ -125,7 +129,7 @@ int standard_binary_search(int *array, unsigned int array_size, int key)
 
 // faster than the standard binary search, same number of checks
 
-int boundless_binary_search(int *array, unsigned int array_size, int key)
+int boundless_binary_search(int* array, unsigned int array_size, int key)
 {
 	unsigned int mid, bot;
 
@@ -159,7 +163,7 @@ int boundless_binary_search(int *array, unsigned int array_size, int key)
 
 // always double tap ⁍⁍
 
-int doubletapped_binary_search(int *array, unsigned int array_size, int key)
+int doubletapped_binary_search(int* array, unsigned int array_size, int key)
 {
 	unsigned int mid, bot;
 
@@ -192,7 +196,7 @@ int doubletapped_binary_search(int *array, unsigned int array_size, int key)
 
 // faster than the boundless binary search, more checks
 
-int monobound_binary_search(int *array, unsigned int array_size, int key)
+int monobound_binary_search(int* array, unsigned int array_size, int key)
 {
 	unsigned int bot, mid, top;
 
@@ -227,7 +231,7 @@ int monobound_binary_search(int *array, unsigned int array_size, int key)
 
 // heck, always triple tap ⁍⁍⁍
 
-int tripletapped_binary_search(int *array, unsigned int array_size, int key)
+int tripletapped_binary_search(int* array, unsigned int array_size, int key)
 {
 	unsigned int bot, mid, top;
 
@@ -261,7 +265,7 @@ int tripletapped_binary_search(int *array, unsigned int array_size, int key)
 
 // better performance on large arrays
 
-int monobound_quaternary_search(int *array, unsigned int array_size, int key)
+int monobound_quaternary_search(int* array, unsigned int array_size, int key)
 {
 	unsigned int bot, mid, top;
 
@@ -325,7 +329,7 @@ int monobound_quaternary_search(int *array, unsigned int array_size, int key)
 
 // requires an even distribution
 
-int monobound_interpolated_search(int *array, unsigned int array_size, int key)
+int monobound_interpolated_search(int* array, unsigned int array_size, int key)
 {
 	unsigned int bot, mid, top;
 	int min, max;
@@ -354,7 +358,7 @@ int monobound_interpolated_search(int *array, unsigned int array_size, int key)
 	min = array[0];
 	max = array[bot];
 
-	bot *= (float) (key - min) / (max - min);
+	bot *= (float)(key - min) / (max - min);
 
 	top = 64;
 
@@ -432,7 +436,7 @@ int monobound_interpolated_search(int *array, unsigned int array_size, int key)
 
 // requires in order sequential access
 
-int adaptive_binary_search(int *array, unsigned int array_size, int key)
+int adaptive_binary_search(int* array, unsigned int array_size, int key)
 {
 	static unsigned int i, balance;
 	unsigned int bot, top, mid;
@@ -493,7 +497,7 @@ int adaptive_binary_search(int *array, unsigned int array_size, int key)
 		}
 	}
 
-	monobound:
+monobound:
 
 	while (top > 3)
 	{
@@ -527,18 +531,22 @@ int adaptive_binary_search(int *array, unsigned int array_size, int key)
 
 long long utime()
 {
+#if defined(_WIN32) || defined(_WIN64)
+	FILETIME now_time;
+	GetSystemTimeAsFileTime(&now_time);
+	return (long long)now_time.dwHighDateTime << 32 | now_time.dwLowDateTime;
+#else
 	struct timeval now_time;
-
 	gettimeofday(&now_time, NULL);
-
 	return now_time.tv_sec * 1000000LL + now_time.tv_usec;
+#endif
 }
 
-int *o_array, *r_array;
+int* o_array, * r_array;
 int density, max, loop, top, rnd, runs, sequential;
 long long start, end, best;
 
-void execute(int (*algo_func)(int *, unsigned int, int), const char * algo_name)
+void execute(int (*algo_func)(int*, unsigned int, int), const char* algo_name)
 {
 	long long stable, value;
 	unsigned int cnt, hit, miss;
@@ -547,11 +555,11 @@ void execute(int (*algo_func)(int *, unsigned int, int), const char * algo_name)
 
 	best = 0;
 
-	for (int run = runs ; run ; --run)
+	for (int run = runs; run; --run)
 	{
 		checks = 0;
-		hit    = 0;
-		miss   = 0;
+		hit = 0;
+		miss = 0;
 
 		if (sequential)
 		{
@@ -559,7 +567,7 @@ void execute(int (*algo_func)(int *, unsigned int, int), const char * algo_name)
 
 			start = utime();
 
-			for (cnt = 0 ; cnt < loop ; cnt++)
+			for (cnt = 0; cnt < loop; cnt++)
 			{
 				value = algo_func(o_array, max, r_array[cnt]);
 
@@ -579,12 +587,12 @@ void execute(int (*algo_func)(int *, unsigned int, int), const char * algo_name)
 		{
 			start = utime();
 
-			for (cnt = 0 ; cnt < loop ; cnt++)
+			for (cnt = 0; cnt < loop; cnt++)
 			{
 				if (algo_func(o_array, max, r_array[cnt]) >= 0)
 				{
 					hit++;
-				}	
+				}
 				else
 				{
 					miss++;
@@ -612,12 +620,12 @@ void execute(int (*algo_func)(int *, unsigned int, int), const char * algo_name)
 
 #define run(algo) execute(&algo, #algo)
 
-int cmp_int(const void * a, const void * b)
+int cmp_int(const void* a, const void* b)
 {
-	return *(int *) a - *(int *) b;
+	return *(int*)a - *(int*)b;
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 	int cnt, val;
 
@@ -641,15 +649,15 @@ int main(int argc, char **argv)
 	if (argc > 4)
 		rnd = atoi(argv[4]);
 
-	o_array = (int *) malloc(max * sizeof(int));
-	r_array = (int *) malloc(loop * sizeof(int));
+	o_array = (int*)malloc(max * sizeof(int));
+	r_array = (int*)malloc(loop * sizeof(int));
 
-	if ((long long) max * (long long) density > 2000000000)
+	if ((long long)max * (long long)density > 2000000000)
 	{
 		density = 2;
 	}
 
-	for (cnt = 0, val = 0 ; cnt < max ; cnt++)
+	for (cnt = 0, val = 0; cnt < max; cnt++)
 	{
 		o_array[cnt] = (val += rand() % (density * 2));
 	}
@@ -658,7 +666,7 @@ int main(int argc, char **argv)
 
 	srand(rnd);
 
-	for (cnt = 0 ; cnt < loop ; cnt++)
+	for (cnt = 0; cnt < loop; cnt++)
 	{
 		r_array[cnt] = rand() % top;
 	}
@@ -668,7 +676,7 @@ int main(int argc, char **argv)
 	printf("Even distribution with %d 32 bit integers, random access\n\n", max);
 
 	printf("| %30s | %10s | %10s | %10s | %10s | %10s |\n", "Name", "Items", "Hits", "Misses", "Checks", "Time");
-	printf("| %30s | %10s | %10s | %10s | %10s | %10s |\n", "----------", "----------", "----------", "----------", "----------", "----------");		
+	printf("| %30s | %10s | %10s | %10s | %10s | %10s |\n", "----------", "----------", "----------", "----------", "----------", "----------");
 
 	if (max <= 128 && max != 10 && max != 100)
 	{
@@ -686,7 +694,7 @@ int main(int argc, char **argv)
 
 	// uneven distribution
 
-	for (cnt = 0 ; cnt < max / 2 ; cnt++)
+	for (cnt = 0; cnt < max / 2; cnt++)
 	{
 		o_array[cnt] = cnt - cnt % 2;
 	}
